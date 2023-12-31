@@ -1,0 +1,124 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+
+public partial class draft : System.Web.UI.Page
+{
+    DataSet data;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        Page.Trace.IsEnabled = true;
+        GetData(ref data);
+        if (!IsPostBack)
+        {
+            ViewState["SortExpression"] = "Draft Date";
+            ViewState["SortDirection"] = "DESC";
+        }
+        //if (ViewState["CurrentPageIndex"] != null)
+        //{
+        //    GridView1.PageIndex = (Int32)ViewState["CurrentPageIndex"];
+        //}
+        BindGrid(ref data);
+    }
+    protected void UploadButton_Click(object sender, EventArgs e)
+    {
+        UploadResults.Text = "";
+        if (UploadDraft.HasFile)
+        {
+            try
+            {
+                int results = Mylib.Draft.AddNewDraft(new StreamReader(UploadDraft.FileContent), "Server=(local);Database=limitedinformation;User ID=t8cnnt;Password=All#s2u$");
+                if (results == -1)
+                {//Invalid File format
+                    UploadResults.Text = "There was an error with the file format. Please check the file and try again.";
+                    UploadDraft.SaveAs("C:/Websites/limitedinfo/limitedinformation.net/wwwroot/Logs/" + UploadDraft.FileName);
+                    StreamWriter errorlog = new StreamWriter("C:/Websites/limitedinfo/limitedinformation.net/Logs/" + DateTime.Today.ToLongDateString() + ".txt");
+                    errorlog.WriteLine("AddNewDraft returned " + results + " with the file " + UploadDraft.FileName);
+                    errorlog.WriteLine("\r\n");
+                    errorlog.Flush();
+                    errorlog.Close();
+                    return;
+                }
+                if (results == -2)
+                {//Invalid File format, database updated and reversed
+                    UploadResults.Text = "There was an error with the data in the file. Please check the file and try again.";
+                    UploadDraft.SaveAs("C:/Websites/limitedinfo/limitedinformation.net/Logs/" + UploadDraft.FileName);
+                    StreamWriter errorlog = new StreamWriter("C:/Websites/limitedinfo/limitedinformation.net/Logs/" + DateTime.Today.ToLongDateString() + ".txt");
+                    errorlog.WriteLine("AddNewDraft returned " + results + " with the file " + UploadDraft.FileName);
+                    errorlog.WriteLine("\r\n");
+                    errorlog.Flush();
+                    errorlog.Close();
+                    return;
+                }
+            }
+            catch (System.Data.SqlClient.SqlException ex)
+            {//SQL exception. Most likely an attempt to upload a duplicate event.
+                UploadResults.Text = "There was an error creating adding information to the database. If this is the first time you've uploaded this file, please check the file and try again.";
+                UploadDraft.SaveAs("C:/Websites/limitedinfo/limitedinformation.net/Logs/" + UploadDraft.FileName);
+                StreamWriter errorlog = new StreamWriter("C:/Websites/limitedinfo/limitedinformation.net/Logs/" + DateTime.Today.ToLongDateString() + ".txt");
+                errorlog.WriteLine("SQL exception occured with the file " + UploadDraft.FileName);
+                errorlog.WriteLine(ex);
+                errorlog.WriteLine("\r\n");
+                errorlog.Flush();
+                errorlog.Close();
+                return;
+            }
+        }
+        else
+        {//No file attached
+            UploadResults.Text = "No file detected. Please choose a file, then click on upload.";
+            return;
+        }
+        //File was uploaded successfully
+        UploadResults.Text = "File Uploaded successfully!";
+        //Response.Redirect("~/draft.aspx");
+    }
+    void GetData(ref DataSet data)
+    {
+        SqlConnection cnnt = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["limitedinformationConnectionString"].ConnectionString);
+        string query = "SELECT DISTINCT eventtbl_1.eventid AS ID, eventtbl_1.playername AS [Player Name], (SELECT DISTINCT cardtbl.setname FROM eventtbl INNER JOIN drafttbl ON eventtbl.eventid = drafttbl.eventid INNER JOIN cardtbl ON drafttbl.cardid = cardtbl.cardid WHERE (drafttbl.pack = 1) AND (eventtbl_1.eventid = eventtbl.eventid)) AS [Set 1], (SELECT DISTINCT cardtbl_3.setname FROM eventtbl AS eventtbl_3 INNER JOIN drafttbl AS drafttbl_3 ON eventtbl_3.eventid = drafttbl_3.eventid INNER JOIN cardtbl AS cardtbl_3 ON drafttbl_3.cardid = cardtbl_3.cardid WHERE (drafttbl_3.pack = 2) AND (eventtbl_1.eventid = eventtbl_3.eventid)) AS [Set 2], (SELECT DISTINCT cardtbl_2.setname FROM eventtbl AS eventtbl_2 INNER JOIN drafttbl AS drafttbl_2 ON eventtbl_2.eventid = drafttbl_2.eventid INNER JOIN cardtbl AS cardtbl_2 ON drafttbl_2.cardid = cardtbl_2.cardid WHERE (drafttbl_2.pack = 3) AND (eventtbl_1.eventid = eventtbl_2.eventid)) AS [Set 3], eventtbl_1.created AS [Draft Date] FROM eventtbl AS eventtbl_1 INNER JOIN drafttbl AS drafttbl_1 ON eventtbl_1.eventid = drafttbl_1.eventid INNER JOIN cardtbl AS cardtbl_1 ON drafttbl_1.cardid = cardtbl_1.cardid";
+        SqlDataAdapter SQL = new SqlDataAdapter(query, cnnt);
+        data = new DataSet();
+        SQL.Fill(data, "Detail");
+    }
+    void BindGrid(ref DataSet data)
+    {
+        data.Tables[0].DefaultView.Sort = ViewState["SortExpression"].ToString() + " " + ViewState["SortDirection"];
+        Events.DataSource = data.Tables[0].DefaultView;
+        Events.DataBind();
+        //DisableViewState(Events);
+    }
+    protected void GridView1_SortCommand(object sender, EventArgs e)
+    {
+        if (ViewState["SortExpression"].ToString() == ((System.Web.UI.WebControls.LinkButton)(sender)).Text)
+        {
+            if (ViewState["SortDirection"].ToString() == "ASC")
+                ViewState["SortDirection"] = "DESC";
+            else
+                ViewState["SortDirection"] = "ASC";
+        }
+        else
+            ViewState["SortDirection"] = "ASC";
+        ViewState["SortExpression"] = ((System.Web.UI.WebControls.LinkButton)(sender)).Text;
+        BindGrid(ref data);
+    }
+    //protected void GridView1_PageIndexChanged(object sender, GridViewPageEventArgs e)
+    //{
+    //    GridView1.PageIndex = e.NewPageIndex;
+    //    ViewState["CurrentPageIndex"] = e.NewPageIndex;
+    //    BindGrid(ref data);
+    //}
+    private void DisableViewState(GridView gv)
+    {
+        foreach (GridViewRow gvi in gv.Rows)
+        {
+            gvi.EnableViewState = false;
+        }
+    }    
+}

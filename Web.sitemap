@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<siteMap xmlns="http://schemas.microsoft.com/AspNet/SiteMap-File-1.0" >
+    <siteMapNode url="~/Default.aspx" title="Home"  description="Home page">
+        <siteMapNode url="~/top8.aspx" title="Top 8"  description="Top 8 Predictor" />
+        <siteMapNode url="~/draft.aspx" title="Draft"  description="MTGO Draft Viewer" />
+        <siteMapNode url="~/deck.aspx" title="Decks"  description="Uploaded Sealed Decks" />
+        <siteMapNode url="~/About.aspx" title="About"  description="About page" />
+    </siteMapNode>
+</siteMap>

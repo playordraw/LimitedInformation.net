@@ -1,0 +1,75 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.master.cs" Inherits="SiteMaster" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head id="Head1" runat="server">
+    <%--This Title should never be seen anywhere.--%>
+    <title>Welcome to Limited Information | limitedinformation</title>
+    <link href="~/Styles/Site.css" rel="stylesheet" type="text/css" />
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server">
+    </asp:ContentPlaceHolder>    
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-23763829-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+
+</script>
+<script type="text/javascript" src="http://apis.google.com/js/plusone.js"></script>
+</head>
+<body>
+    <form id="Form1" runat="server">
+    <div class="page">
+        <div class="header">
+            <div class="title">
+                <asp:ImageButton runat="server" AlternateText="Limited Information" 
+                    ImageUrl="~/images/Banner.jpg" ID="Banner" PostBackUrl="~/Default.aspx" />
+            </div>
+            <div class="clear menuarea">
+                <asp:Menu ID="NavigationMenu" runat="server" CssClass="menu" EnableViewState="false"
+                    IncludeStyleBlock="false" Orientation="Horizontal" SkipLinkText="" 
+                    DataSourceID="SiteMap" StaticDisplayLevels="2">
+                </asp:Menu>
+                <%--<g:plusone size="tall"></g:plusone>--%>
+                <div class="loginDisplay">
+                    <%--<asp:LoginView ID="HeadLoginView" runat="server" EnableViewState="false">
+                        <AnonymousTemplate>
+                            [ <a href="~/Account/Login.aspx" id="HeadLoginStatus" runat="server">Log In</a>
+                            ]
+                        </AnonymousTemplate>
+                        <LoggedInTemplate>
+                            Welcome <span class="bold">
+                                <asp:LoginName ID="HeadLoginName" runat="server" />
+                            </span>! [
+                            <asp:LoginStatus ID="HeadLoginStatus" runat="server" LogoutAction="Redirect" LogoutText="Log Out"
+                                LogoutPageUrl="~/" />
+                            ]
+                        </LoggedInTemplate>
+                    </asp:LoginView>--%>
+                </div>
+            </div>
+        </div>
+        <div class="clear"></div>
+        <div class="main">
+            <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="footer">
+        <asp:Menu ID="FooterMenu" runat="server" BorderStyle="None" DataSourceID="SiteMap"
+            DynamicEnableDefaultPopOutImage="False" MaximumDynamicDisplayLevels="0" Orientation="Horizontal"
+            SkipLinkText="" StaticDisplayLevels="2" ViewStateMode="Disabled" EnableViewState="False">            
+        </asp:Menu>
+        <asp:SiteMapDataSource ID="SiteMap" runat="server" EnableViewState="False" />
+        <div class="Copyright">© 2011 Jeffrey Reynolds<br /> Magic: The Gathering © Wizards of the Coast</div>
+        <asp:ContentPlaceHolder ID="ModifyDate" runat="server" />
+    </div>
+    </form>
+</body>
+</html>
